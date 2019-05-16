@@ -26,11 +26,22 @@ func discovery() []byte {
 }
 
 func (this *Record) Show() {
-	fmt.Printf("%s - %16s:%s HTTPS:%s - %s\n", this.Mac, this.IP, this.HttpPort, this.HttpsPort, this.Model)
+
+	fmt.Printf("%s | %15s:%3s | %15s | HTTPS:%s\n",
+		this.Mac, this.IP, this.HttpPort, this.Model, this.HttpsPort)
 }
 
 func Drm() {
-	udpSock, err := net.ListenUDP("udp", nil)
+
+	address := "10.17.254.2:10000"
+	addr, err := net.ResolveUDPAddr("udp", address)
+	if err != nil {
+		fmt.Println(err)
+		//os.Exit(1)
+	}
+
+	//udpSock, err := net.ListenUDP("udp", nil)
+	udpSock, err := net.ListenUDP("udp", addr)
 	if err != nil {
 		log.Println(err.Error())
 		WaitChan <- true
@@ -38,11 +49,12 @@ func Drm() {
 	}
 
 	//send discovery packet
-	broadcastAddr := net.UDPAddr{IP: net.IPv4(255, 255, 255, 255), Port: 10000}
+	broadcastAddr := net.UDPAddr{IP: net.IPv4bcast, Port: DRM_PORT}
 	udpSock.WriteToUDP(discovery(), &broadcastAddr)
 
 	//start listening
 	buf := make([]byte, 1024)
+
 	for {
 		udpSock.SetReadDeadline(time.Now().Add(time.Second * 2))
 		readSize, _, err := udpSock.ReadFromUDP(buf)
@@ -102,7 +114,14 @@ func Drm() {
 			}
 		}
 
-		record.Show()
+		value, ok := Records[record.Mac]
+		if ok {
+			Records[record.Mac] = value
+		} else {
+			Records[record.Mac] = record.Model
+			record.Show()
+		}
+
 	}
 }
 

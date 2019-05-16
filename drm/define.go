@@ -23,7 +23,10 @@ const Ext_HTTPS_PORT = 0x16
 const Ext_CLOUD_VADP = 0x17
 const Ext_MODE = 0x0a
 
+const DRM_PORT = 10000
+
 var WaitChan chan bool = make(chan bool)
+var Records = make(map[string]string)
 
 type Record struct {
 	Mac       string
