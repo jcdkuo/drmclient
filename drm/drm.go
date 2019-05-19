@@ -34,6 +34,9 @@ func Drm(waitChan chan bool, senderIPAddr string, drmListenPort int) {
 	buf := make([]byte, 1024)
 
 	for {
+		// Set a deadline for the ReadOperation so that we don't
+		// wait forever for a server that might not respond on
+		// a resonable amount of time.
 		udpSock.SetReadDeadline(time.Now().Add(time.Second * 2))
 		readSize, _, err := udpSock.ReadFromUDP(buf)
 		if err != nil {
