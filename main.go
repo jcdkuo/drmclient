@@ -2,21 +2,12 @@ package main
 
 import (
 	"drmclient/drm"
-	"drmclient/foo"
-	"fmt"
 	"log"
-	"net"
 )
 
 func main() {
 
-	addr, _ := net.InterfaceAddrs()
-	fmt.Println(addr)
-	interfaces, _ := net.Interfaces()
-	fmt.Println(interfaces)
-
-	foo.Hello()
-	fmt.Println(drm.Discovery_Req)
+	drm.Usage()
 	go drm.Drm()
 
 	<-drm.WaitChan
