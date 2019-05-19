@@ -2,18 +2,17 @@ package main
 
 import (
 	"drmclient/drm"
-	"drmclient/foo"
-	"fmt"
 	"log"
 )
 
 func main() {
 
-	foo.Hello()
-	fmt.Println(drm.Discovery_Req)
-	go drm.Drm()
+	args := Argument{}
+	usage(&args)
 
-	<-drm.WaitChan
+	waitChan := make(chan bool, 1)
+	go drm.Drm(waitChan, args.SenderIPAddr, args.DRMListenPort)
+	<-waitChan
 }
 
 func checkerr(err error) {
