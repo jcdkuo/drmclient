@@ -1,38 +1,20 @@
 package drm
 
 import (
-	"bytes"
-	"encoding/binary"
 	//"fmt"
 	"log"
-	"math/rand"
 	"net"
-	"strconv"
 	"time"
 )
 
-func discovery() []byte {
+// Drm is used for scaning VIVOTEK products
+func Drm(waitChan chan bool, senderIPAddr string, drmListenPort int) {
 
-	rand.Seed(time.Now().UTC().UnixNano())
-	buf := new(bytes.Buffer)
-
-	var action uint8 = DISCOVERY_REQ
-	binary.Write(buf, binary.BigEndian, action)
-
-	var rnd int32 = rand.Int31()
-	binary.Write(buf, binary.BigEndian, rnd)
-
-	return buf.Bytes()
-}
-
-func Drm() {
-
-	senderAddr := Args.IP + ":" + strconv.Itoa(Args.Port)
-	addr, err := net.ResolveUDPAddr("udp", senderAddr)
+	addr, err := net.ResolveUDPAddr("udp", senderIPAddr)
 	if err != nil {
 		log.Println(err.Error())
 		//fmt.Println("ResolveUDPAddr")
-		WaitChan <- true
+		waitChan <- true
 		return
 	}
 
@@ -40,13 +22,13 @@ func Drm() {
 	if err != nil {
 		log.Println(err.Error())
 		//fmt.Println("ListenUDP")
-		WaitChan <- true
+		waitChan <- true
 		return
 	}
 
-	//send discovery packet
-	broadcastAddr := net.UDPAddr{IP: net.IPv4bcast, Port: Args.Port}
-	udpSock.WriteToUDP(discovery(), &broadcastAddr)
+	//Send discovery REQ packet
+	broadcastAddr := net.UDPAddr{IP: net.IPv4bcast, Port: drmListenPort}
+	udpSock.WriteToUDP(composeDiscoveryREQ(), &broadcastAddr)
 
 	//start listening
 	buf := make([]byte, 1024)
@@ -56,12 +38,12 @@ func Drm() {
 		readSize, _, err := udpSock.ReadFromUDP(buf)
 		if err != nil {
 			//fmt.Println("ReadFromUDP")
-			WaitChan <- true
+			waitChan <- true
 			return
 		}
 
 		record := Record{}
-		parseAtt(readSize, buf, &record)
+		parseDiscoveryACK(readSize, buf, &record)
 
 		checkResult(&record)
 	}

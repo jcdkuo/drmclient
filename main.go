@@ -7,10 +7,12 @@ import (
 
 func main() {
 
-	drm.Usage()
-	go drm.Drm()
+	args := Argument{}
+	usage(&args)
 
-	<-drm.WaitChan
+	waitChan := make(chan bool, 1)
+	go drm.Drm(waitChan, args.SenderIPAddr, args.DRMListenPort)
+	<-waitChan
 }
 
 func checkerr(err error) {

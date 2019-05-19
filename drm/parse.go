@@ -7,29 +7,29 @@ import (
 	"strings"
 )
 
-func parseAtt(readSize int, buf []byte, record *Record) {
+func parseDiscoveryACK(readSize int, buf []byte, record *Record) {
 
-	var processedSize int = 0
-	if buf[0] == DISCOVERY_ACK {
+	if buf[0] == discoveryACK {
 		r := bytes.NewReader(buf[0:])
 
 		var msgType uint8
-		var msgId uint32
+		var msgID uint32
+
+		binary.Read(r, binary.BigEndian, &msgType)
+		binary.Read(r, binary.BigEndian, &msgID)
+
 		var attrType uint8
 		var lengthTag uint8
 		var contentSize int
+		processedSize := 0
 
-		binary.Read(r, binary.BigEndian, &msgType)
-		binary.Read(r, binary.BigEndian, &msgId)
-
-		//log.Printf("type:%d id: %d\n", msgType, msgId, attType)
 		for processedSize < readSize {
 			binary.Read(r, binary.BigEndian, &attrType)
 			binary.Read(r, binary.BigEndian, &lengthTag)
 
 			processedSize += 6
 			tagType := lengthTag >> 7
-			processedSize += 1
+			processedSize++
 
 			if tagType == 0 {
 				contentSize = int(lengthTag)
@@ -38,42 +38,41 @@ func parseAtt(readSize int, buf []byte, record *Record) {
 				break
 			}
 
-			bAtt := make([]byte, contentSize)
-			r.Read(bAtt)
-			var att string
+			bAttr := make([]byte, contentSize)
+			r.Read(bAttr)
+
+			var attStr string
 
 			switch attrType {
-			case ATTR_FIRMEWARE_VERSION:
-				att = string(bAtt)
-				record.Firmware_version = att
-			case ATTR_MAC:
-				att = fmt.Sprintf("%02x:%02x:%02x:%02x:%02x:%02x", bAtt[0], bAtt[1], bAtt[2], bAtt[3], bAtt[4], bAtt[5])
-				att = strings.ToUpper(att)
-				record.Mac = att
-			case ATTR_IP:
-				att = fmt.Sprintf("%d.%d.%d.%d", bAtt[0], bAtt[1], bAtt[2], bAtt[3])
-				record.IP = att
-			case ATTR_EXT:
-				parseExt(bAtt, record)
+			case attrFirmwareVersion:
+				attStr = string(bAttr)
+				record.FirmwareVersion = attStr
+			case attrMacAddress:
+				attStr = fmt.Sprintf("%02x:%02x:%02x:%02x:%02x:%02x", bAttr[0], bAttr[1], bAttr[2], bAttr[3], bAttr[4], bAttr[5])
+				record.MacAddress = strings.ToUpper(attStr)
+			case attrIPAddress:
+				record.IPAddress = fmt.Sprintf("%d.%d.%d.%d", bAttr[0], bAttr[1], bAttr[2], bAttr[3])
+			case attrExtension:
+				parseExtension(bAttr, record)
 			}
-
 			processedSize += contentSize
 		}
 	}
 }
 
-func parseExt(buf []byte, record *Record) {
+func parseExtension(buf []byte, record *Record) {
+
 	readSize := len(buf)
 	processedSize := 0
 
 	r := bytes.NewReader(buf)
 
-	var attType uint8
+	var extType uint8
 	var lengthTag uint8
 	var contentSize int
 
 	for processedSize < readSize {
-		binary.Read(r, binary.BigEndian, &attType)
+		binary.Read(r, binary.BigEndian, &extType)
 		binary.Read(r, binary.BigEndian, &lengthTag)
 
 		processedSize += 2
@@ -87,30 +86,27 @@ func parseExt(buf []byte, record *Record) {
 			return
 		}
 
-		bAtt := make([]byte, contentSize)
-		r.Read(bAtt)
-		var att string
+		bExt := make([]byte, contentSize)
+		r.Read(bExt)
+		var extStr string
 
-		switch attType {
-		case EXT_HTTP:
-			att = fmt.Sprintf("%d", (bAtt[1]<<8)+bAtt[0])
-			record.HttpPort = att
-		case EXT_HTTPS_PORT:
-			att = fmt.Sprintf("%d", (bAtt[1]<<8)+bAtt[0])
-			record.HttpsPort = att
-		case EXT_FTP:
-			att = fmt.Sprintf("%d", (bAtt[1]<<8)+bAtt[0])
-		case EXT_LANG:
-			att = string(bAtt)
-		case EXT_MODEL_NAME:
-			att = string(bAtt)
-			record.Model = att
-		case EXT_EZ_VER:
-			att = fmt.Sprintf("%d.%d.%d.%d", bAtt[0], bAtt[1], bAtt[2], bAtt[3])
-		case EXT_HOSTNAME:
-			att = string(bAtt)
+		switch extType {
+		case extHTTP:
+			extStr = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+			record.HTTPPort = extStr
+		case extHTTPSPort:
+			record.HTTPSPort = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+		case extFTP:
+			extStr = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+		case extLang:
+			extStr = string(bExt)
+		case extModelName:
+			record.ModelName = string(bExt)
+		case extEzVersion:
+			extStr = fmt.Sprintf("%d.%d.%d.%d", bExt[0], bExt[1], bExt[2], bExt[3])
+		case extHostname:
+			extStr = string(bExt)
 		}
-
 		processedSize += contentSize
 	}
 }

@@ -4,17 +4,17 @@ import (
 	"fmt"
 )
 
-func (this *Record) Show() {
+func (r *Record) show() {
 
 	fmt.Printf("%s | %15s:%s | %15s | Firmware: %s | HTTPS:%s\n",
-		this.Mac, this.IP, this.HttpPort, this.Model, this.Firmware_version, this.HttpsPort)
+		r.MacAddress, r.IPAddress, r.HTTPPort, r.ModelName, r.FirmwareVersion, r.HTTPSPort)
 }
 
 func checkResult(record *Record) {
-	if value, ok := Records[record.Mac]; ok {
-		Records[record.Mac] = value
+	if value, exist := Records[record.MacAddress]; exist {
+		Records[record.MacAddress] = value
 	} else {
-		Records[record.Mac] = record.Model
-		record.Show()
+		Records[record.MacAddress] = record.ModelName
+		record.show()
 	}
 }
