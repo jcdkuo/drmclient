@@ -1,8 +1,12 @@
+// +build linux darwin windows
+// +build arm amd64
+
 package main
 
 import (
 	"drmclient/drm"
 	"log"
+	"runtime"
 )
 
 func main() {
@@ -11,7 +15,12 @@ func main() {
 	usage(&args)
 
 	waitChan := make(chan bool, 1)
-	go drm.Drm(waitChan, args.SenderIPAddr, args.DRMListenPort)
+	if runtime.GOARCH == "arm" {
+		go drm.DrmForARM(waitChan, args.SenderIPAddr, args.DRMListenPort)
+	} else {
+		go drm.Drm(waitChan, args.SenderIPAddr, args.DRMListenPort)
+	}
+
 	<-waitChan
 }
 
