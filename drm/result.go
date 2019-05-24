@@ -6,7 +6,7 @@ import (
 
 func (r *Record) show() {
 
-	fmt.Printf("%s | %15s:%s | %15s | Firmware: %s | HTTPS:%s\n",
+	fmt.Printf("%s | %15s:%s | %18s | Firmware:%22s | HTTPS:%s\n",
 		r.MacAddress, r.IPAddress, r.HTTPPort, r.ModelName, r.FirmwareVersion, r.HTTPSPort)
 }
 
@@ -15,6 +15,8 @@ func checkResult(record *Record) {
 		Records[record.MacAddress] = value
 	} else {
 		Records[record.MacAddress] = record.ModelName
-		record.show()
+		if record.MacAddress != "" {
+			record.show()
+		}
 	}
 }
