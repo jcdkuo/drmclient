@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	//"strconv"
 	"strings"
 )
 
@@ -92,12 +93,14 @@ func parseExtension(buf []byte, record *Record) {
 
 		switch extType {
 		case extHTTP:
-			extStr = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+			extStr = fmt.Sprintf("%d", binary.LittleEndian.Uint16(bExt))
 			record.HTTPPort = extStr
 		case extHTTPSPort:
-			record.HTTPSPort = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+			data := binary.LittleEndian.Uint16(bExt)
+			record.HTTPSPort = fmt.Sprintf("%d", data)
+			//record.HTTPSPort = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
 		case extFTP:
-			extStr = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+			extStr = fmt.Sprintf("%d", binary.LittleEndian.Uint16(bExt))
 		case extLang:
 			extStr = string(bExt)
 		case extModelName:

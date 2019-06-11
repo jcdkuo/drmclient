@@ -16,7 +16,7 @@ func main() {
 
 	waitChan := make(chan bool, 1)
 	if runtime.GOARCH == "arm" {
-		go drm.DrmForARM(waitChan, args.SenderIPAddr, args.DRMListenPort)
+		go drm.ScanForARM(waitChan, args.SenderIPAddr, args.DRMListenPort)
 	} else {
 		go drm.Drm(waitChan, args.SenderIPAddr, args.DRMListenPort)
 	}

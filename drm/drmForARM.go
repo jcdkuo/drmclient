@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// Drm for ARM is used for scaning VIVOTEK products
-func DrmForARM(waitChan chan bool, senderIPAddr string, drmListenPort int) {
+// ScanForARM is used for scaning VIVOTEK products
+func ScanForARM(waitChan chan bool, senderIPAddr string, drmListenPort int) {
 
 	udpSock, err := net.ListenUDP("udp", nil)
 	if err != nil {
