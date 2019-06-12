@@ -18,7 +18,7 @@ func main() {
 	if runtime.GOARCH == "arm" {
 		go drm.ScanForARM(waitChan, args.SenderIPAddr, args.DRMListenPort)
 	} else {
-		go drm.Drm(waitChan, args.SenderIPAddr, args.DRMListenPort)
+		go drm.Discovery(waitChan, args.SenderIPAddr, args.DRMListenPort)
 	}
 
 	<-waitChan

@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// Drm is used for scaning VIVOTEK products
-func Drm(waitChan chan bool, senderIPAddr string, drmListenPort int) {
+// Discovery is used for scaning VIVOTEK products
+func Discovery(waitChan chan bool, senderIPAddr string, drmListenPort int) {
 
 	addr, err := net.ResolveUDPAddr("udp", senderIPAddr)
 	if err != nil {

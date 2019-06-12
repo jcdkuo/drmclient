@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	//"strconv"
 	"strings"
 )
 
@@ -96,9 +95,7 @@ func parseExtension(buf []byte, record *Record) {
 			extStr = fmt.Sprintf("%d", binary.LittleEndian.Uint16(bExt))
 			record.HTTPPort = extStr
 		case extHTTPSPort:
-			data := binary.LittleEndian.Uint16(bExt)
-			record.HTTPSPort = fmt.Sprintf("%d", data)
-			//record.HTTPSPort = fmt.Sprintf("%d", (bExt[1]<<8)+bExt[0])
+			record.HTTPSPort = fmt.Sprintf("%d", binary.LittleEndian.Uint16(bExt))
 		case extFTP:
 			extStr = fmt.Sprintf("%d", binary.LittleEndian.Uint16(bExt))
 		case extLang:
